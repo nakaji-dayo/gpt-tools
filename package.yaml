@@ -29,6 +29,10 @@ dependencies:
 - microlens
 - generic-lens
 - interpolate
+- transformers
+- filepath
+- attoparsec
+- process
 
 ghc-options:
 - -Wall

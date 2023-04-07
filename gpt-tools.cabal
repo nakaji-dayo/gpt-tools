@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
+      ChatM
       DemoDic
+      DemoGoTest
       Lib
       OpenAI.Client
       OpenAI.Type
@@ -37,14 +39,18 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
+    , attoparsec
     , base >=4.7 && <5
     , bytestring
+    , filepath
     , generic-lens
     , http-conduit
     , interpolate
     , microlens
     , pretty-simple
+    , process
     , text
+    , transformers
   default-language: Haskell2010
 
 executable gpt-tools-exe
@@ -56,15 +62,19 @@ executable gpt-tools-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , attoparsec
     , base >=4.7 && <5
     , bytestring
+    , filepath
     , generic-lens
     , gpt-tools
     , http-conduit
     , interpolate
     , microlens
     , pretty-simple
+    , process
     , text
+    , transformers
   default-language: Haskell2010
 
 test-suite gpt-tools-test
@@ -77,13 +87,17 @@ test-suite gpt-tools-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , attoparsec
     , base >=4.7 && <5
     , bytestring
+    , filepath
     , generic-lens
     , gpt-tools
     , http-conduit
     , interpolate
     , microlens
     , pretty-simple
+    , process
     , text
+    , transformers
   default-language: Haskell2010

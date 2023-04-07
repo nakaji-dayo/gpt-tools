@@ -12,7 +12,7 @@ import OpenAI.Type
 
 pprintChat :: [Message] -> IO ()
 pprintChat =
-  mapM_ (\x -> T.putStrLn $ tshow (x ^. #role) <> ": " <> x ^. #content <> "\n\n\n-----------------------------")
+  mapM_ (\x -> T.putStrLn $ tshow (x ^. #role) <> ": " <> x ^. #content <> "\n-----------------------------")
 
 tshow :: Show a => a -> Text
 tshow = pack . show

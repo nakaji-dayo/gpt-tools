@@ -11,11 +11,13 @@ import Data.String.Interpolate
 import Data.Text (Text, pack)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
-import Lens.Micro (ix, (^?))
+import Lens.Micro (ix, (^?), (^.))
 import OpenAI.Client
 import OpenAI.Type
 import System.Environment (lookupEnv)
 import Util
+import ChatM (msgsM, lastM, userM, Chat, runChat, ppMagsM)
+import Control.Monad (forever)
 
 promptDic :: String
 promptDic =
@@ -38,42 +40,40 @@ answer: {解答を入力}
 dicDemo1 :: IO ()
 dicDemo1 = do
   key <- fromMaybe (error "OPENAI_KEY required") <$> lookupEnv "OPENAI_KEY"
-  run key dummyDic "hvguy8fはどこの都道府県の食べ物ですか?"
+  runChat key $ run dummyDic "hvguy8fはどこの都道府県の食べ物ですか?"
 
 dicDemo :: FilePath -> String -> IO ()
 dicDemo f q = do
   key <- fromMaybe (error "OPENAI_KEY required") <$> lookupEnv "OPENAI_KEY"
   d <- readMDDic f
-  run key d (pack q)
+  runChat key $ run d (pack q)
 
-run :: String -> [(Text, Text)] -> Text -> IO ()
-run key dic q = talk initMsg
+run ::  [(Text, Text)] -> Text -> Chat ()
+run dic q = do
+  msgsM initMsg
+  forever talk
   where
     initMsg =
       [ Message System (pack promptDic),
         Message User q
       ]
-    talk msgs = do
-      pprintChat msgs
-      res <- callAPI (pack key) $ defaultGPT35 {messages = msgs}
-      case res of
-        Right x -> do
-          case x ^? #choices . ix 0 . #message . #content of
-            Just c -> talk $ msgs ++ [Message Assistant c, usrAns c]
-            _ -> putStrLn "exit"
-        Left e -> print e
+    talk = do
+      msg <- lastM
+      let ans = usrAns (msg ^. #content)
+      userM ans
+      ppMagsM
     parseCmd p = fmap T.strip . mapMaybe (T.stripPrefix p)
     search = parseCmd "search:"
     answer = parseCmd "answer:"
     usrAns msg =
       let ls = T.lines msg
        in case (search ls, answer ls) of
-            ([], []) -> Message User "フォーマットを守って下さい"
+            ([], []) -> "フォーマットを守って下さい"
             (xs, []) ->
               let ws = fmap (\k -> "- " <> k <> ": " <> lookupDic k) xs
-               in Message User ("次の用語集を使って回答して下さい: \n" <> T.unlines ws <> "\n\n" <> q)
-            ([], _) -> Message User "解答内の未知の単語を再度searchして下さい。"
-            _ -> Message User "コマンドは一つづつ使って下さい。"
+               in "次の用語集を使って回答して下さい: \n" <> T.unlines ws
+            ([], _) -> "解答内の未知の単語を再度searchして下さい。"
+            _ -> "コマンドは一つづつ使って下さい。"
     lookupDic k = fromMaybe "未知の単語です" $ lookup k dic
 
 dummyDic :: [(Text, Text)]
